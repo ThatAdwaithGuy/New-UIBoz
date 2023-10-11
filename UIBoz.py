@@ -1,18 +1,11 @@
-from DrawBoz import DrawBoz
+
 
 '''
 psedo-code
 
 a = DrawBoz([DrawBoz.AddText(f"Heelo {MyDynamicValue}")])
 
-
-
-
 '''
-
-
-
-
 
 
 def PageCounter(PageDict):
@@ -31,7 +24,7 @@ class Page:
     def __init__(self, PageContent: DrawBoz, PageID: int=PageCounter(PageDict), PageName: str='Main Page') -> None:
         PageDict[PageID] = PageName
         self.Page = Page
-        self.RenderedPage = Page.RenderString()
+        self.RenderedPage = PageContent.RenderString()
 
     def Refresh(self):
         print('\033c')
