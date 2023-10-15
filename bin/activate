@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/adwaith/New-UIBoz"
+VIRTUAL_ENV="/home/adwaith/UIBoz"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
@@ -55,9 +55,9 @@ fi
 
 if [ -z "${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
     _OLD_VIRTUAL_PS1="${PS1:-}"
-    PS1="(New-UIBoz) ${PS1:-}"
+    PS1="(UIBoz) ${PS1:-}"
     export PS1
-    VIRTUAL_ENV_PROMPT="(New-UIBoz) "
+    VIRTUAL_ENV_PROMPT="(UIBoz) "
     export VIRTUAL_ENV_PROMPT
 fi
 

@@ -1,4 +1,4 @@
-#!/home/adwaith/New-UIBoz/bin/python3
+#!/home/adwaith/UIBoz/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -1,4 +1,4 @@
-#from DrawBoz import DrawBoz, TextInstance, BozInstance
+from rDrawBoz import DrawBoz, TextInstance, BozInstance
 
 from typing import Any, Dict
 
@@ -24,15 +24,14 @@ Here all of these share a command var, so a if that the value changes then all o
 ===================================================================
 '''
 
-
-
-
-
 class Value:
     def __init__(self,
                  _Value: Any,
-                 parent_value=None) -> None:
+                 parent_value: 'Value'=None,
+                 is_parent_value_same_as_Value: bool=False) -> None:
         
+
+        ''' Type hinting '''
         if parent_value is not None and not isinstance(parent_value, Value):
             raise TypeError('Parent Value is not a Value type')
 
@@ -41,12 +40,14 @@ class Value:
         #self.self_changed = False
         self.child_values: list[Value] = []
         self.is_child = False
+        self.is_same = False
 
         if parent_value != None:
-            self.is_child = True
             self.changed = False
             self.parent_value = parent_value
-            self._Value = parent_value
+            if is_parent_value_same_as_Value:
+                self.is_same = True
+                self._Value = parent_value
             self.parent_value.add_child(self)
 
     ''' <Setters and Getters>'''
@@ -58,15 +59,13 @@ class Value:
             return self._Value
     
     def set_value(self, new_value: Any):
-        #if not isinstance(new_value, Value):
-        #    raise TypeError('Given Value is not a Value type')
+        
         self.value_buffer = new_value
         self.changed = True
         
     ''' child_value is Value Type '''
-    def add_child(self, child_value):
-        if not isinstance(child_value, Value):
-            raise TypeError('Given Value is not a Value type')
+    def add_child(self, child_value: 'Value'):
+        
         self.child_values.append(child_value)
 
     '''         </>          '''
@@ -78,7 +77,7 @@ class Value:
         else:
             return False
 
-    def send_new_value_to_children(self, _Value):
+    def send_new_value_to_children(self, _Value: 'Value'):
         for i in self.child_values:
             i.parent_value = _Value
             i.changed = True
@@ -86,7 +85,7 @@ class Value:
 
 
 class Lifetime:
-    def __init__(self, Lifetime_name: str) -> None:
+    def __init__(self, Lifetime_name: str='Main') -> None:
         self.Lifetime_name = Lifetime_name
         self.value_dict: Dict[int, Value] = {}
     
@@ -96,17 +95,16 @@ class Lifetime:
     
     def refresh_values(self):
         for index, value in self.value_dict.items():
-            if value.check_self_or_parent_is_changed():
-                if value.is_child:
-                    value.send_new_value_to_children(value.value_buffer)
-                    value._Value = value.parent_value
-                else:
-                    value.send_new_value_to_children(value.value_buffer)
-                    value._Value = value.value_buffer
-                
-            
+            if not value.check_self_or_parent_is_changed():
+                continue
 
-'''
+            if value.is_same:
+                value.send_new_value_to_children(value.value_buffer)
+                value._Value = value.parent_value
+            else:
+                value.send_new_value_to_children(value.value_buffer)
+                value._Value = value.value_buffer
+
 class Page:
     def __init__(self, page_data: BozInstance) -> None:
         self.page_data = page_data
@@ -120,27 +118,5 @@ class Page:
         return self.page_data_rendered.RenderString()
 
     def clear(self) -> None:
-        print('c')
-'''
-
-a: Value = Value('hello')
-b: Value = Value('', a)
-
-print(f"B: {b.get_value()}")
-
-life = Lifetime('hello')
-
-life.add_value(a)
-life.add_value(b)
-
-a.set_value('hi')
-life.refresh_values()
-print(f"A: {a.get_value()}")
-
-print(f"B: {b.get_value()}")
-    
-
-
-
-
+        print('\033c')
 
