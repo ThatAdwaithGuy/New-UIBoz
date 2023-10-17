@@ -82,6 +82,10 @@ class TextInstance:
         self.TextColour = TextColour
         self.TextBackgroundColor = TextBackgroundColor
 
+    def generate_list(self) -> list[str | int]:
+        return [self.Text, self.LineNumber, self.position, self.TextColour, self.TextBackgroundColor]
+
+
 class BozInstance:
     def __init__(self, Text_data: List[List[Any]], Borders: bool=True, Height: int=12, Width: int=56) -> None:
         self.Text_data = Text_data
@@ -89,27 +93,29 @@ class BozInstance:
         self.Height = Height
         self.Width = Width
     
-    def refresh_text_data(self, new_text_data: List[List[Any]]):
-        self.Text_data = new_text_data
+    def generate_list(self) -> list[Any]:
+        return [self.Text_data, self.Borders, self.Height, self.Width]
 
     
     
 class DrawBoz:
-    def __init__(self, BozInstance: BozInstance):
-        self.Borders: bool = BozInstance.Borders  
-        self.Height: int = BozInstance.Height
-        self.Width: int = BozInstance.Width  
-        self.InputArray: list[list] = BozInstance.Text_data
+    def __init__(self, BozInstance: list[Any]):
+        
+
+        self.Borders: bool = BozInstance[1]  
+        self.Height: int = BozInstance[2]
+        self.Width: int = BozInstance[3]  
+        self.InputArray: list[list] = BozInstance[0]
         self.CompleteArray: list = ["null"] * self.Height
     
     @staticmethod
-    def AddText(TextInstance: TextInstance) -> list: 
+    def AddText(TextInstance: list[Any]) -> list: 
         # Extracting Text Instance
-        Text = TextInstance.Text 
-        LineNumber = TextInstance.LineNumber 
-        position = TextInstance.position
-        TextColour = TextInstance.TextColour 
-        TextBackgroundColor = TextInstance.TextBackgroundColor 
+        Text = TextInstance[0]
+        LineNumber = TextInstance[1] 
+        position = TextInstance[2]
+        TextColour = TextInstance[3] 
+        TextBackgroundColor = TextInstance[4] 
 
         isColored: bool = True
         text: str = Text
