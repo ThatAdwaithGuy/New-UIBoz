@@ -1,7 +1,9 @@
+import os
 from rDrawBoz import DrawBoz, TextInstance, BozInstance
 import time
 from typing import Any, Dict
-
+import sys
+import keyboard
 '''
 =================================MY IDEA==========================
                             A
@@ -101,23 +103,6 @@ class Value:
         
 '''
 
-class InputFunctions:
-    def __init__(self) -> None:
-        pass
-        
-    def _ready(self):
-        pass
-
-    def _update(self):
-        pass
-    
-    ''' Run Both of these ^ '''
-    def Run(self):
-        self._ready()
-        while True:
-            self._update()
-            self.refresh_values()
-    
 
 class Lifetime:
     def __init__(self, Lifetime_name: str='Main') -> None:
@@ -156,29 +141,72 @@ class Page:
     def clear(self) -> None:
         print('\033c')
 
-class MyFunctions(InputFunctions):
-    def __init__(self) -> None:
-        Running = True
-    
+
+class InputFunctions(type):
+    def __new__(cls, name, bases, attrs):
+
+        if "_ready" in attrs and "_update" in attrs:
+            
+            def run(self):
+                self._ready()
+                self.is_running = True
+                while self.is_running:
+                    self._update()
+
+            
+            attrs["run"] = run
+
+       
+        return super().__new__(cls, name, bases, attrs)
+
+
+class MyFunctions(metaclass=InputFunctions):
     
     def _ready(self):
-        self.a = Value('Hello')
-        self.b = Value([], self.a)
-        self.c = Value([], self.b)
-        self.d = Value([], self.c)
-        self.life = Lifetime() 
-        self.life.add_value(self.a)
-        self.life.add_value(self.b)
-        self.life.add_value(self.c)
-        self.life.add_value(self.d)
+        pass
 
     def _update(self):
-        self.b.set_value(TextInstance(self.a.get_value()))
-        self.c.set_value(BozInstance([DrawBoz.AddText(self.c.parent_value.get_value())]))
-        self.d.set_value(DrawBoz(self.d.parent_value))
+        def keyy(e):
+            return e.name
+        
+        sys.stdout.write("\033[?25l")
 
-        print(self.d.get_value)
+        a = Value('Hello')
+        b = Value([], a)
+        c = Value([], b)
+        d = Value([], c)
+        life = Lifetime() 
+        life.add_value(a)
+        life.add_value(b)
+        life.add_value(c)
+        life.add_value(d)
+        
+        
+        b.set_value(TextInstance(b.parent_value.get_value()).generate_list())
+        
+        life.refresh_values()
+
+        c.set_value(BozInstance([DrawBoz.AddText(c.parent_value)]).generate_list())
+
+        life.refresh_values()
+
+        d.set_value(DrawBoz(d.parent_value))
+
+        life.refresh_values()
+      
+        buffer = d.get_value().RenderString()
+        
+        keyboard.on_press(lambda e: a.set_value(e.name))
+
+        sys.stdout.write(buffer)
+        sys.stdout.flush()
+        
+        time.sleep(0.089)
+
+        sys.stdout.write('\033c')
+        sys.stdout.flush()
+        print('\u200B')
 
 
 a = MyFunctions()
-a.Run()
+a.run()
