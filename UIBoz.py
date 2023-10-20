@@ -2,6 +2,7 @@ from rDrawBoz import DrawBoz, TextInstance, BozInstance
 import time
 from typing import Any, Dict
 from typing import Optional
+from abc import ABC, abstractmethod
 
 '''
 =================================MY IDEA==========================
@@ -31,7 +32,7 @@ class Value:
                  is_parent_value_same_as_Value: bool=False) -> None:
         
 
-        ''' Type hinting '''
+
         if parent_value != None and not isinstance(parent_value, Value):
             raise TypeError('Parent Value is not a Value type')
         
@@ -59,7 +60,7 @@ class Value:
   
   
 
-    ''' <Setters and Getters>'''
+    
 
     def get_value(self):
         if isinstance(self._Value, Value):
@@ -71,13 +72,12 @@ class Value:
         self.value_buffer = new_value
         self.changed = True
         
-    ''' child_value is Value Type '''
+    
     def add_child(self, child_value: 'Value'):
         self.child_values.append(child_value)
 
-    '''         </>          '''
+    
 
-    ''' this should be in the lifetime loop '''
     def check_self_or_parent_is_changed(self) -> bool:
         if self.changed:
             return True
@@ -91,24 +91,20 @@ class Value:
             i.changed = True
 
 
+class InputInterface(ABC):
+    Running: bool = True
+    @abstractmethod
+    def _ready(self):
+        pass
 
-''' overide both of these in the child class '''
-'''
-    Like this
+    @abstractmethod
+    def _update(self):
+        pass
 
-    class ExampleClass(InputFunctions):
-        def __init__(self):
-            self.super()
-        @overide
-        def _ready(self):
-            ...
-        def _update(self):
-            ...
-        
-'''
-
-
-    
+    def run(self):
+        self._ready()
+        while self.Running:
+            self._update()
 
 class Lifetime:
     def __init__(self, Lifetime_name: str='Main') -> None:
@@ -149,8 +145,55 @@ class Page:
 
 
 
+class Concrete(InputInterface):
+    def _ready(self):
+        self.a = Value('Hallo, im Dumb')
+        self.b = Value([], self.a)
+        self.c = Value([], self.b)
+        self.d = Value([], self.c)
+
+        self.life = Lifetime() 
+
+        self.life.add_value(self.a)
+        self.life.add_value(self.b)
+        self.life.add_value(self.c)
+        self.life.add_value(self.d)
+
+    def _update(self):
+        #print(b.parent_value.get_value())
+        self.b.set_value(TextInstance(self.b.parent_value.get_value()).generate_list())
+
+        self.life.refresh_values()
+        self.life.refresh_values()
+        self.life.refresh_values()
+
+        #print(c.parent_value)   
+        self.c.set_value(BozInstance([DrawBoz.AddText(self.c.parent_value.get_value())]).generate_list())
+
+        self.life.refresh_values()
+        self.life.refresh_values()
+        self.life.refresh_values()
+
+        #print(d.parent_value)
+
+        self.d.set_value(DrawBoz(self.d.parent_value.get_value()))
+
+        self.life.refresh_values()
+        self.life.refresh_values()
+        self.life.refresh_values()
+
+        self.a.set_value("Hello, I'm smart")
+
+        self.life.refresh_values()
+        self.life.refresh_values()
+        self.life.refresh_values()
+        print(self.d.get_value().RenderString())
+
+a = Concrete()
+a.run()
 
 
+'''
 a = Value('Hallo, im Dumb')
 b = Value([], a)
 c = Value([], b)
@@ -197,6 +240,7 @@ for i in range(10):
     life.refresh_values()
     life.refresh_values()
     life.refresh_values()
+'''
 
     
     
