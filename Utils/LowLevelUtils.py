@@ -4,63 +4,50 @@ from typing import Any, Optional, Dict
 class Value:
     def __init__(
         self,
-        _Value: Any,
+        value: Any,
         lifetime: "Lifetime",
-        parent_value: Optional["Value"] = None,
-        is_parent_value_same_as_Value: bool = False,
+        ParentValue: Optional["Value"] = None,
+        IsParentValueSameAsValue: bool = False,
     ) -> None:
-        if parent_value != None and not isinstance(parent_value, Value):
+        if ParentValue != None and not isinstance(ParentValue, value):
             raise TypeError("Parent Value is not a Value type")
 
-        self._Value: type(_Value) = _Value
-        self.value_buffer: type(_Value) = _Value
-        self.child_values: list[Value] = []
+        self.value: type(value) = value
+        self.ValueBuffer: type(value) = value
+        self.ChildValues: list[value] = []
         self.changed: bool = False
-        self.is_same: bool = False
-        self.parent_value: Optional[Value] = None
+        self.IsSame: bool = False
+        self.ParentValue: Optional[value] = None
         self.lifetime = lifetime
         self.lifetime.add_value(self)
 
-        if parent_value != None:
-            self.parent_value = parent_value
-            if is_parent_value_same_as_Value:
-                self.is_same = True
-                self._Value = parent_value
-            self.parent_value.add_child(Value(self._Value, Lifetime()))
+        if ParentValue != None:
+            self.ParentValue = ParentValue
+            if IsParentValueSameAsValue:
+                self.IsSame = True
+                self.value = ParentValue
+            self.ParentValue.AddChild(Value(self.value, lifetime()))
 
-    def take_a_potty(self):
-        print(self._Value)
-
-        print(
-            self.parent_value
-            if self.parent_value == None
-            else self.parent_value.get_value()
-        )
-
-    def get_value(self):
-        if isinstance(self._Value, Value):
-            return self._Value._Value
+    
+    def GetValue(self):
+        if isinstance(self.value, Value):
+            return self.value.value
         else:
-            return self._Value
+            return self.value
 
-    def set_value(self, new_value: Any):
-        self.value_buffer = new_value
+    def SetValue(self, NewValue: Any):
+        self.ValueBuffer = NewValue
         self.changed = True
-        self.lifetime.refresh_values()
+        self.lifetime.Refresh()
 
-    def add_child(self, child_value: "Value"):
-        self.child_values.append(child_value)
+    def AddChild(self, child_value: "Value"):
+        self.ChildValues.append(child_value)
 
-    def check_self_or_parent_is_changed(self) -> bool:
-        if self.changed:
-            return True
-        else:
-            return False
 
-    def send_new_value_to_children(self, value: "Value"):
-        for i in self.child_values:
+    def SendNewValueToChildren(self, value: "Value"):
+        for i in self.ChildValues:
             # print(f'ummm, this is gonna  be bad but lol, Value: {i.get_value()}')
-            i.parent_value = value
+            i.ParentValue = value
             i.changed = True
 
 
@@ -74,9 +61,9 @@ class Lifetime:
         id: int = len(self.value_dict) + 1
         self.value_dict[id] = Value
 
-    def refresh_values(self):
+    def Refresh(self):
         for index, value in self.value_dict.items():
             if value.changed:
-                value.send_new_value_to_children(value.value_buffer)
-                value._Value = value.value_buffer
+                value.SendNewValueToChildren(value.ValueBuffer)
+                value.value = value.ValueBuffer
                 value.changed = False

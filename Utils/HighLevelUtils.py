@@ -1,5 +1,5 @@
 from typing import Dict
-from LowLevelClasses import Value
+from LowLevelUtils import Value
 from abc import ABC, abstractmethod
 from DrawBoz import DrawBoz, BozInstance, TextInstance
 
@@ -9,29 +9,29 @@ from DrawBoz import DrawBoz, BozInstance, TextInstance
 class InputInterface(ABC):
     Running: bool = True
     @abstractmethod
-    def _ready(self):
+    def _Ready(self):
         pass
 
     @abstractmethod
-    def _update(self):
+    def _Update(self):
         pass
 
-    def run(self):
+    def Run(self):
         self._ready()
         while self.Running:
             self._update()
 
 class Page:
-    def __init__(self, page_data: BozInstance) -> None:
-        self.page_data = page_data
-        self.page_data_rendered = DrawBoz(page_data)
+    def __init__(self, PageData: BozInstance) -> None:
+        self.PageData = PageData
+        self.PageDataRendered = DrawBoz(PageData)
     
-    def refresh(self, new_page_data):
-        self.page_data = new_page_data
-        self.page_data_rendered = DrawBoz(new_page_data)
+    def Refresh(self, NewPageData):
+        self.PageData = NewPageData
+        self.PageDataRendered = DrawBoz(NewPageData)
 
-    def render_page(self) -> str:
-        return self.page_data_rendered.RenderString()
+    def RenderPage(self) -> str:
+        return self.PageDataRendered.RenderString()
 
     def clear(self) -> None:
         print('\033c')

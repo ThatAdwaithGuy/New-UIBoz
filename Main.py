@@ -1,9 +1,3 @@
-from DrawBoz import DrawBoz, TextInstance, BozInstance
-from LowLevelClasses import Value, Lifetime
-from HighLevelClasses import InputInterface
-import time
-from pynput import keyboard
-
 """
 ========================= 究極のやるべきことリスト =========================
 
@@ -15,18 +9,13 @@ from pynput import keyboard
 
 ====================================================================
 """
+from DrawBoz.DrawBoz import DrawBoz, BozInstance, TextInstance, Color
 
 
-def keyboard_input(key):
-    print(str(key))
-    with open("key.txt", "a") as keyLog:
-        char = key.char
-        keyLog.write(char)
-
-
-a = keyboard.Listener(on_press=keyboard_input)
-a.start()
-input()
+a = TextInstance("Hello", 6, 0, Color.RESET, Color.RESET, 28).generate_list()
+b = TextInstance("Bye", 6, 0, Color.RESET, Color.RESET, 10).generate_list()
+Boz = BozInstance([DrawBoz.AddText(a)]).generate_list()
+print(DrawBoz(Boz).RenderString())
 
 
 """
