@@ -1,14 +1,9 @@
-from ast import Add
 from functools import lru_cache
 
 from dataclasses import dataclass
 
-from inspect import currentframe
-import re
 
 from typing import Union
-
-from click import STRING
 
 
 _last_id = 0
@@ -102,46 +97,64 @@ class DrawBoz:
         return groups
 
     @staticmethod
-    def _overlay_2_strings(string1: str, string2: str):
-        smaler_string = ""
-        bigger_string = ""
-        make_lists_equal_length = lambda list1, list2: (
-            list1 + [" "] * (len(list2) - len(list1)),
-            list2 + [" "] * (len(list1) - len(list2)),
-        )
+    def _overlay(lst):
+        def _overlay_2_strings(string1: str, string2: str):
+            smaler_string = ""
+            bigger_string = ""
+            make_lists_equal_length = lambda list1, list2: (
+                list1 + [" "] * (len(list2) - len(list1)),
+                list2 + [" "] * (len(list1) - len(list2)),
+            )
 
-        if len(string1) > len(string2):
-            smaler_string = string1
-            bigger_string = string2
-            lead_spaces = len(string1)
+            if len(string1) > len(string2):
+                smaler_string = string1
+                bigger_string = string2
+                lead_spaces = len(string1)
 
-        elif len(string1) < len(string2):
-            smaler_string = string2
-            bigger_string = string1
-            lead_spaces = len(string2)
+            elif len(string1) < len(string2):
+                smaler_string = string2
+                bigger_string = string1
+                lead_spaces = len(string2)
 
-        smaler_list = list(smaler_string)
-        bigger_list = list(bigger_string)
-        output_list = []
+            smaler_list = list(smaler_string)
+            bigger_list = list(bigger_string)
+            output_list = []
 
-        for i in range(len(bigger_list)):
-            if bigger_list[i] == " " and smaler_list[i] == " ":
-                continue
-            elif bigger_list[i] != " " and smaler_list[i] == " ":
-                continue
-            elif bigger_list[i] == " " and smaler_list[i] != " ":
-                continue
-            elif bigger_list[i] != " " and smaler_list[i] != " ":
-                smaler_list.insert(0, " ")
-        smaler_list, bigger_list = make_lists_equal_length(smaler_list, bigger_list)
-        for i in range(len(bigger_list)):
-            if bigger_list[i] == " " and smaler_list[i] == " ":
-                output_list.append(" ")
-            elif bigger_list[i] != " " and smaler_list[i] == " ":
-                output_list.append(bigger_list[i])
-            elif bigger_list[i] == " " and smaler_list[i] != " ":
-                output_list.append(smaler_list[i])
-        return "".join(output_list)
+            for i in range(len(bigger_list)):
+                if bigger_list[i] == " " and smaler_list[i] == " ":
+                    continue
+                elif bigger_list[i] != " " and smaler_list[i] == " ":
+                    continue
+                elif bigger_list[i] == " " and smaler_list[i] != " ":
+                    continue
+                elif bigger_list[i] != " " and smaler_list[i] != " ":
+                    smaler_list.insert(0, " ")
+            smaler_list, bigger_list = make_lists_equal_length(smaler_list, bigger_list)
+            for i in range(len(bigger_list)):
+                if bigger_list[i] == " " and smaler_list[i] == " ":
+                    output_list.append(" ")
+                elif bigger_list[i] != " " and smaler_list[i] == " ":
+                    output_list.append(bigger_list[i])
+                elif bigger_list[i] == " " and smaler_list[i] != " ":
+                    output_list.append(smaler_list[i])
+            return "".join(output_list)
+
+        result = []
+        last_element = None
+        if len(lst) % 2 == 1:
+            last_element = lst[-1]
+            data = lst[:-1]
+
+        for i in range(0, len(lst), 2):
+            try:
+                result.append(_overlay_2_strings(lst[i], lst[i + 1]))
+            except IndexError:
+                pass
+
+        if len(lst) % 2 == 1:
+            result.append(last_element)
+
+        return DrawBoz._overlay(result) if len(result) > 1 else result[0]
 
     def RenderString(self):
         # ================ERROR HANDLING================
@@ -163,6 +176,19 @@ class DrawBoz:
                 )
         # ==============================================
 
+        all_values = [
+            [
+                self._format(
+                    value.ForeColor + value.BackColor + value.Text + Color.RESET,
+                    value.Column,
+                ),
+                value._id,
+                value.LineNumber,
+            ]
+            for value in {i: v for i, v in enumerate(self.InputArray)}.values()
+        ]
+
+        # =============== COLUMN HANDLER ===============
         # A Beautiful Oneliner to handle Duplicate Values.
         duplicate_values = self._get_duplicates(
             [
@@ -177,29 +203,32 @@ class DrawBoz:
                 for value in {i: v for i, v in enumerate(self.InputArray)}.values()
             ]
         )
+        prepared_duplicate_values = []
         for i in duplicate_values:
             InputListData = []
             current_merge = [self._format(f"{j[4] + j[0] + j[5]}", j[3]) for j in i]
 
-            InputListData.append(
-                self._overlay_2_strings(current_merge[0], current_merge[1])
-            )
+            InputListData.append(self._overlay([current_merge[0], current_merge[1]]))
+            InputListData.append(i[0][1])
+            InputListData.append(j[1] for j in i)
             InputListData.append(i[0][2])
-
-            print(InputListData)
-        return duplicate_values
+            print(i)
+            prepared_duplicate_values.append(InputListData)
+        print(prepared_duplicate_values)
+        # ==============================================
 
 
 Hallo = DrawBoz(
     BozInstance(
         [
-            Text("b", 2, 10, 40),
-            Text("Hallo", 1, LineNumber=10, ForeColor=Color.CYAN),
+            Text("b", 1, 10, 40),
+            Text("Hallo", 2, LineNumber=10, ForeColor=Color.CYAN),
             Text("Gallo", 3, 5, 13),
             Text("Bello", 4, 5),
         ]
     )
 )
 
-
 Hallo.RenderString()
+# a = ["           Hello", "    hd", "                        jde"]
+# print(DrawBoz._overlay(a))
