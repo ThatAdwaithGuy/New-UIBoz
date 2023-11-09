@@ -119,37 +119,29 @@ class DrawBoz:
         return [text, LineNumber, Coloum, isColored]
 
     @staticmethod
-    def __get_duplicates(inputArray):
-        frequencyDict = {}
-        for innerArray in inputArray:
-            secondValue = innerArray[1]
-            if secondValue in frequencyDict:
-                frequencyDict[secondValue].append(innerArray)
+    def __get_duplicates(input_array):
+        frequency_dict = {}
+        for inner_array in input_array:
+            second_value = inner_array[1]
+            if second_value in frequency_dict:
+                frequency_dict[second_value] += 1
             else:
-                frequencyDict[secondValue] = [innerArray]
+                frequency_dict[second_value] = 1
 
-        # Filter the dictionary to include only values with duplicates
-        filteredDict = {
-            key: value for key, value in frequencyDict.items() if len(value) > 1
-        }
+        # Create a list of the duplicate second values.
+        duplicate_second_values = []
+        for second_value, frequency in frequency_dict.items():
+            if frequency > 1:
+                duplicate_second_values.append(second_value)
 
-        # Create the output array while keeping ANSI escape codes
-        outputArray = [value for value in filteredDict.values()]
+        # Create an array with another array which has the first, second and third value of the inner input array but only if it has a duplicate second value with any other inner array.
+        output_array = []
+        for inner_array in input_array:
+            second_value = inner_array[1]
+            if second_value in duplicate_second_values:
+                output_array.append([inner_array[0], second_value, inner_array[2]])
 
-        return outputArray
-
-    @staticmethod
-    def __overlay(strings):
-        max_length = max(len(s) for s in strings)
-        final_string = [" "] * max_length
-        for s in strings:
-            s_list = list(s)
-            s_list.extend(" " * (max_length - len(s)))
-            final_string = [
-                char if char != " " else final_char
-                for char, final_char in zip(s_list, final_string)
-            ]
-        return "".join(final_string)
+        return output_array
 
     @lru_cache(maxsize=128)
     def RenderString(self) -> str:
@@ -157,25 +149,14 @@ class DrawBoz:
 
         duplicate_values = self.__get_duplicates(
             [
-                (value[0], value[1], value[2], value[3])
+                (key, value[1], value[2])
                 for key, value in {i: v for i, v in enumerate(self.InputArray)}.items()
             ]
         )
-        ColoumizedInputArray = []
 
-        # print(duplicate_values)
+        print(duplicate_values)
 
-        formated_list: list[list[Any]] = [
-            [[f"{j[0]:>{j[2]}}", j[1], j[2], j[3]] for j in i] for i in duplicate_values
-        ]
-
-        for i in formated_list:
-            StrList = [j[0] for j in i]
-            Overlayed = self.__overlay(StrList)
-            ColoumizedInputArray.append([Overlayed, i[0][1], i[0][3]])
-
-        print(ColoumizedInputArray)
-
+        ColoumizedInputArray = self.InputArray
         seen_pairs = set()
         for inner_list in self.InputArray:
             pair = (inner_list[1], inner_list[2])
@@ -186,11 +167,12 @@ class DrawBoz:
             seen_pairs.add(pair)
 
         # Just prepares Adds Line data into CompleteArray
-        for text, LineNumber, isColored in ColoumizedInputArray:
+        for text, LineNumber, Coloum, isColored in self.InputArray:
             if 0 <= LineNumber < len(self.CompleteArray):
                 self.CompleteArray[LineNumber] = [
                     text,
                     LineNumber,
+                    Coloum,
                     isColored,
                 ]
 
@@ -222,21 +204,17 @@ class DrawBoz:
 
             elif self.Borders:
                 # Is colored
-                OutputString += (
-                    f"{BoxClass.UC} {(v[0])}{'‎' * (self.Width - 5)} {BoxClass.UC}\n"
-                )
-                # if v[3]:
-                #    OutputString += f"{BoxClass.UC} {(v[0])}{'‎' * (self.Width - 5)} {BoxClass.UC}\n"
-                # elif not v[3]:
-                #    OutputString += f"{BoxClass.UC} {(v[0])}{'‎' * (self.Width - 5)} {BoxClass.UC}\n"
+                if v[3]:
+                    OutputString += f"{BoxClass.UC} {(v[0])}{'‎' * (self.Width - 5)} {BoxClass.UC}\n"
+                elif not v[3]:
+                    OutputString += f"{BoxClass.UC} {(v[0])}{'‎' * (self.Width - 5)} {BoxClass.UC}\n"
 
             elif not self.Borders:
                 # Is colored
-                OutputString += f"{(v[0])}{'‎' * (self.Width - 6)}\n"
-                # if v[3]:
-                #    OutputString += f"{(v[0])}{'‎' * (self.Width - 6)}\n"
-                # elif not v[3]:
-                #    OutputString += f"{(v[0])}{'‎' * (self.Width - 6)}\n"
+                if v[3]:
+                    OutputString += f"{(v[0])}{'‎' * (self.Width - 6)}\n"
+                elif not v[3]:
+                    OutputString += f"{(v[0])}{'‎' * (self.Width - 6)}\n"
 
         if self.Borders:
             OutputString += _Box.DW
@@ -246,30 +224,22 @@ class DrawBoz:
         return OutputString
 
 
-def __overlay(strings):
-    max_length = max(len(s) for s in strings)
-    final_string = [" "] * max_length
-    for s in strings:
-        s_list = list(s)
-        s_list.extend(" " * (max_length - len(s)))
-        final_string = [
-            char if char != " " else final_char
-            for char, final_char in zip(s_list, final_string)
-        ]
-    return "".join(final_string)
-
-
-def Align(inputList):
-    return [f"{i[0]:>{i[2]}}" for i in inputList]
-
-
-a = ["          A", "                      B", "                              C"]
-b = [["A", "filler", 10], ["B", "filler", 20], ["C", "filler", 30]]
-# print(Overlay(Align(b)))
-
 t2 = TextInstance("OMG", Coloum=20)
-tb = TextInstance("lol", Coloum=30)
-ah = BozInstance([DrawBoz.AddText(t2), DrawBoz.AddText(tb)])
+tb = TextInstance("lol")
+ta = TextInstance("byeeee", Coloum=30, LineNumber=3)
+te = TextInstance("ba", Coloum=7, LineNumber=3)
+tc = TextInstance("baa", Coloum=56, LineNumber=3)
+ea = TextInstance("baka", 10)
+ah = BozInstance(
+    [
+        DrawBoz.AddText(t2),
+        DrawBoz.AddText(tb),
+        DrawBoz.AddText(ta),
+        DrawBoz.AddText(te),
+        DrawBoz.AddText(tc),
+        DrawBoz.AddText(ea),
+    ]
+)
 a = DrawBoz(ah)
 
 
